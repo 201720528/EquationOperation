@@ -1,67 +1,71 @@
-package test2;
+package test5;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Stack;
+import java.util.Random;
 
-
-public class Exercise {
-	//´æ´¢´ğ°¸
-	//Éú³ÉÌâÄ¿
-	public  HashMap<String,Integer> createExercise() {
-		//HashSet ÓÃÓÚÈ¥³ıÖØ¸´µÄÌâÄ¿
-		HashMap<String,Integer> hashMap = new HashMap<String,Integer>();
-
-		//¼ÆÊıÆ÷
-		int count = 0;
+import edition2.Equation2;
+//ç®—å¼ç±»
+public abstract class Equation {
+	
+	private static final int UPPER = 100; 
+	private static final int LOWER = 0;
+	
+	private int leftNum;
+	private int rightNum;
+	private Character operation;
+	private int resultNum;
+	
+	//è°ƒç”¨ä¸¤ä¸ªæŠ½è±¡æ–¹æ³•ï¼Œç”Ÿæˆç¬¦åˆresult>=0&&result<=100ç®—å¼
+	protected void generateBinaryOperation(Character op) {
+		int right,result,left;
 		
-		//Éú³É50µÀÌâÄ¿
-		while(count<50) {
-			//´æ´¢ÔËËã·û
-			GenerateEquations generateEquations = new GenerateEquations();
-			Stack<String> stack = generateEquations.generateEquations();	
-			String str = null;
-			//Éú³ÉËæ»úÊı
-			int[] num = createRandom();
-			//ÓÃÓÚ¼ÆËã½á¹û
-			int out = calculate(stack,num[0],num[1]);			
-			if(out>=0&&out<=100) {//½á¹ûÂú×ãÌõ¼şÔòÌí¼ÓÊı×é
-				
-				while(!stack.empty()) {
-					str = num[0]+stack.pop()+num[1];
-				}
-				str = str + "=";
-				while(str.length()<=8) {
-					str +=" ";
-				}
-				count++;
-				hashMap.put(str, out);
-			}else {//²»Âú×ãÔòÌø¹ı±¾´ÎÑ­»·
-				continue;
-			}
-			
-		}
-		return hashMap;
+		Random random = new Random();
+		left = random.nextInt(UPPER+1);
+		
+		do {
+			right = random.nextInt(UPPER+1);
+			result = calculate(left,right);
+		} while (!checkCalculation(result));
+		
+		leftNum = left;
+		rightNum = right;
+		operation = op;
+		resultNum = result;
+		
 	}
 	
-	//Ë½ÓĞ·½·¨--Éú³ÉËæ»úÊı
-	private  int[] createRandom() {
-		int[] num = new int[2];
-		num[0] = (int)(Math.random()*100);
-		num[1] = (int)(Math.random()*100);
-		return num;
+	//å­ç±»å¿…é¡»å®ç°çš„ä¸¤ä¸ªæŠ½è±¡æ–¹æ³•
+	abstract int calculate(int left,int right);
+	abstract boolean checkCalculation(int result);
+
+	//é€šè¿‡equalsæ–¹æ³•åˆ¤æ–­ä¸¤ä¸ªEquationå¯¹è±¡æ˜¯å¦ç›¸åŒ
+	//ä¿è¯ç®—æ˜¯çš„ä¸é‡å¤æ€§
+	public boolean equals(Equation2 equation){
+		boolean one = (leftNum == equation.getLeftNumber() && rightNum == equation.getRightNumber()
+				&& operation == equation.getOperator());
+		boolean two = (leftNum == equation.getRightNumber() && rightNum == equation.getLeftNumber()
+				&& operation == equation.getOperator());
+		return one || two;
 	}
-	//Ë½ÓĞ·½·¨--ÓÃÓÚ¼ÆËã½á¹û
-	private static int calculate(Stack<String> stack,int num1,int num2) {
-		
-		int out = 0;
-		if(stack.peek()=="+") {
-			out = num1 + num2;
-		}
-		if(stack.peek()=="-") {
-			out = num1 - num2;
-		}
-		return out;
+	
+	public int getLeftNum() {
+		return leftNum;
+	}
+
+	public int getRightNum() {
+		return rightNum;
+	}
+
+	public Character getOperation() {
+		return operation;
+	}
+
+	public int getResultNum() {
+		return resultNum;
+	}
+
+	@Override
+	public String toString() {
+		return leftNum+""+operation+""+rightNum+"=";
 	}
 	
 }

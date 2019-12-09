@@ -1,19 +1,24 @@
-package test2;
+package test6;
 
-public class Test {
+public class test {
 
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		Exercise exercise = new Exercise();
-		Print print = new Print();
-		//´òÓ¡±êÌâ
-		print.printHeader();		
-		//Éú³ÉÊÔÌâ
-		exercise.createExercise();		
-		//´òÓ¡ÊÔÌâ
-		print.printExercise();			
-		//´ğÓ¦½á¹û
-		print.printCalculations();
-	}
+		
+		//50é“åŠ æ³•
+		Exercise exercise1 = new Exercise();
+		exercise1.generateAdditionExercise(50);
+		exercise1.makePrectiseFile(5);
+		exercise1.makeCheckFile(5);	
+		
+		//50é“å‡æ³•
+//		Exercise exercise2 = new Exercise();
+//		exercise2.generateSubstractExercise(50);
+//		exercise2.formatDisplay();
+//		//50é“æ··åˆ
+//		Exercise exercise3 = new Exercise();
+//		exercise3.generateBinaryExercise(50);
+//		exercise3.formatDisplay();
+		
 
+	}
 }

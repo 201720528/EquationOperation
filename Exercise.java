@@ -1,67 +1,281 @@
-package test2;
+package test6;
 
-import java.util.HashMap;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Stack;
+import java.util.List;
+import java.util.Random;
+import java.util.Scanner;
 
+import com.csvreader.CsvReader;
+import com.csvreader.CsvWriter;
 
 public class Exercise {
-	//´æ´¢´ğ°¸
-	//Éú³ÉÌâÄ¿
-	public  HashMap<String,Integer> createExercise() {
-		//HashSet ÓÃÓÚÈ¥³ıÖØ¸´µÄÌâÄ¿
-		HashMap<String,Integer> hashMap = new HashMap<String,Integer>();
+	private static final String pathEQU = "C:\\Users\\d\\Desktop\\è½¯ä»¶æ„é€ \\test\\equation.csv";
+	private static final String pathPRE = "C:\\Users\\d\\Desktop\\è½¯ä»¶æ„é€ \\test\\prectise.csv";
+	private static final String pathCHE = "C:\\Users\\d\\Desktop\\è½¯ä»¶æ„é€ \\test\\check.csv";
 
-		//¼ÆÊıÆ÷
-		int count = 0;
-		
-		//Éú³É50µÀÌâÄ¿
-		while(count<50) {
-			//´æ´¢ÔËËã·û
-			GenerateEquations generateEquations = new GenerateEquations();
-			Stack<String> stack = generateEquations.generateEquations();	
-			String str = null;
-			//Éú³ÉËæ»úÊı
-			int[] num = createRandom();
-			//ÓÃÓÚ¼ÆËã½á¹û
-			int out = calculate(stack,num[0],num[1]);			
-			if(out>=0&&out<=100) {//½á¹ûÂú×ãÌõ¼şÔòÌí¼ÓÊı×é
-				
-				while(!stack.empty()) {
-					str = num[0]+stack.pop()+num[1];
-				}
-				str = str + "=";
-				while(str.length()<=8) {
-					str +=" ";
-				}
-				count++;
-				hashMap.put(str, out);
-			}else {//²»Âú×ãÔòÌø¹ı±¾´ÎÑ­»·
-				continue;
-			}
-			
+	private HashSet<Equation> hashSet = new HashSet<Equation>();
+	public static ArrayList<String[]> lstFile = new ArrayList<String[]>();
+	
+	public void generateBinaryExercise(int operationCount) {
+		Equation equation;
+		while(operationCount>0) {
+			do {
+				equation = generateOperation();
+			} while (repeat(equation));
+			hashSet.add(equation);
+			operationCount--;
 		}
-		return hashMap;
 	}
 	
-	//Ë½ÓĞ·½·¨--Éú³ÉËæ»úÊı
-	private  int[] createRandom() {
-		int[] num = new int[2];
-		num[0] = (int)(Math.random()*100);
-		num[1] = (int)(Math.random()*100);
-		return num;
+	private Equation generateOperation() {
+		Random random = new Random();
+		int num = random.nextInt(2);
+		if (num == 0) {
+			return new AdditionOperation();
+		}else {
+			return new SubstractOperation();
+		}
 	}
-	//Ë½ÓĞ·½·¨--ÓÃÓÚ¼ÆËã½á¹û
-	private static int calculate(Stack<String> stack,int num1,int num2) {
+	
+	private boolean repeat(Equation equation) {
+		List<Equation> list = new ArrayList<Equation>();
+		for(int i=0;i<list.size();i++) {
+			if(list.get(i).equals(equation)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public void generateAdditionExercise(int operationCount) {
+		Equation equation;
+		while(operationCount>0) {
+			do {
+				equation = new AdditionOperation();
+			} while (repeat(equation));
+			hashSet.add(equation);
+			operationCount--;
+		}
+		writeInFile();
+	}
+	
+	public void generateSubstractExercise(int operationCount) {
+		Equation equation;
+		while(operationCount>0) {
+			do {
+				equation = new SubstractOperation();
+			} while (repeat(equation));
+			hashSet.add(equation);
+			operationCount--;
+		}
+		writeInFile();
+	}
+	
+	//å°†ç”Ÿæˆçš„ç®—æ˜¯å†™å…¥ä¹ é¢˜æ–‡ä»¶
+	private void writeInFile() {
+		//cvsæ–‡ä»¶å†™å…¥éƒ¨åˆ†
+		try{
+			CsvWriter csvWriter = new CsvWriter(pathEQU,',',Charset.forName("gb2312"));
+			String[] csvHeader = {"ä¹ é¢˜","ç­”æ¡ˆ"};
+			csvWriter.writeRecord(csvHeader);
+			for(Equation v:hashSet){
+				String[] csvContent = new String[2];
+				csvContent[0] = v.getLeftNum()+""+v.getOperation()+""+v.getRightNum()+"=";
+				csvContent[1] = v.getResultNum()+""; 
+				csvWriter.writeRecord(csvContent);
+			}
+			csvWriter.close();
+			System.out.println("--------------------å·²å®Œæˆå†™å…¥æ“ä½œ--------------");
+		}
+		catch(IOException e){
+			e.printStackTrace();
+		}
+	}
+	
+	//è¯»å–ä¹ é¢˜æ–‡ä»¶ä¸­çš„å†…å®¹
+	public void readInFile() {
+		//cvsæ–‡ä»¶è¯»å…¥éƒ¨åˆ†
+		try {
+			int col = 0;
+			CsvReader reader = new CsvReader(pathEQU,',',Charset.forName("gb2312"));
+			reader.readHeaders();
+			while(reader.readRecord()){
+				//System.out.println(reader.getRawRecord());
+				lstFile.add(reader.getValues());
+			}
+			
+			reader.close();
+			System.out.println(lstFile.size());
+//			System.out.println(lstFile.get(1)[0].toString());
+			for(int row = 0 ; row < lstFile.size(); row ++ ){
+				for(col=0;col<lstFile.get(row).length;col++){
+				String cell = lstFile.get(row)[col];
+				System.out.print(cell);
+				}
+				System.out.println();
+			}
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	//å°†ä¹ é¢˜æ–‡ä»¶å’Œç»ƒä¹ æ–‡ä»¶çš„ç­”æ¡ˆè¿›è¡Œå¯¹æ¯”å’Œè¯„åˆ¤
+	//å°†ç»“æœå†™å…¥è¯„åˆ¤æ–‡ä»¶
+	public void makeCheckFile(int num) {
+		//cvsæ–‡ä»¶è¯»å…¥éƒ¨åˆ†
+		List<String> equation = new ArrayList<String>();
+		List<String> equAnswer = new ArrayList<String>();
+		List<String> preAnswer = new ArrayList<String>();
+		List<String> cheAnswer = new ArrayList<String>();
+		try {
+			BufferedReader reader1 = new BufferedReader(new FileReader(pathEQU));
+			String str = "";
+			int i=0;
+			str = reader1.readLine();
+			while((str=reader1.readLine())!=null&&i<num) {
+				String[] str1 = str.split(",");
+				equAnswer.add(str1[1]);
+			}
+		} catch (FileNotFoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
-		int out = 0;
-		if(stack.peek()=="+") {
-			out = num1 + num2;
+		try {
+			BufferedReader reader = new BufferedReader(new FileReader(pathPRE));
+			String str = "";
+			str = reader.readLine();
+			while((str=reader.readLine())!=null) {
+				String[] str1 = str.split(",");
+				preAnswer.add(str1[1]);
+				equation.add(str1[0]);
+			}
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		if(stack.peek()=="-") {
-			out = num1 - num2;
+		
+		for(int i=0;i<num;i++) {
+			if(equAnswer.get(i).equals(preAnswer.get(i))) {
+//				System.out.println(equAnswer.get(i));
+//				System.out.println(preAnswer.get(i));
+				cheAnswer.add("å¯¹");
+			}else {
+				cheAnswer.add("é”™");
+			}
 		}
-		return out;
+		
+		try{
+			CsvWriter csvWriter = new CsvWriter(pathCHE,',',Charset.forName("gb2312"));
+			String[] csvHeader = {"ä¹ é¢˜","æ ‡å‡†ç­”æ¡ˆ","æ‰€ç­”ç­”æ¡ˆ","æ‰¹æ”¹ç­”æ¡ˆ"};
+			csvWriter.writeRecord(csvHeader);
+			for(int i=0;i<num;i++){
+				String[] csvContent = {equation.get(i),equAnswer.get(i),preAnswer.get(i),cheAnswer.get(i)};
+				csvWriter.writeRecord(csvContent);
+			}
+			csvWriter.close();
+			System.out.println("--------------------å·²å®Œæˆå†™å…¥æ“ä½œ--------------");
+		}
+		catch(IOException e){
+			e.printStackTrace();
+		}
+		
 	}
+	
+	//ä»ä¹ é¢˜æ–‡ä»¶ä¸­è¯»å–ä¸€å®šæ•°é‡çš„ä¹ é¢˜å¹¶ä½œç­”
+	//å°†æ‰€è¯»å–çš„ä¹ é¢˜å’Œæ‰€ç­”å†™å…¥ç»ƒä¹ æ–‡ä»¶å’Œå®¡æŸ¥æ–‡ä»¶
+	public void makePrectiseFile(int num) {
+		Scanner input = new Scanner(System.in);
+		List<String> list = new ArrayList<String>();
+		ArrayList<String[]> lstFile1 = new ArrayList<String[]>();
+		
+		try {
+			int count = 1;
+			BufferedReader reader = new BufferedReader(new FileReader(pathEQU));
+			String str = reader.readLine();
+			while((str=reader.readLine())!=null && count<=num) {
+				String[] str1 = str.split(",");
+				System.out.println(str1[0]);
+				String answer = input.nextLine();
+				list.add(answer);
+				count++;
+			}
+			reader.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		try {
+			CsvReader reader = new CsvReader(pathEQU,',',Charset.forName("gb2312"));
+			reader.readHeaders();
+			while(reader.readRecord()){
+				//System.out.println(reader.getRawRecord());
+				lstFile1.add(reader.getValues());
+			}
+			reader.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		try{
+			CsvWriter csvWriter = new CsvWriter(pathPRE,',',Charset.forName("gb2312"));
+			String[] csvHeader = {"ä¹ é¢˜","ç­”æ¡ˆ"};
+			csvWriter.writeRecord(csvHeader);
+			for(int i=0;i<num;i++){
+				String[] csvContent = {lstFile1.get(i)[0],list.get(i)};
+				csvWriter.writeRecord(csvContent);
+			}
+			csvWriter.close();
+			System.out.println("--------------------å·²å®Œæˆå†™å…¥æ“ä½œ--------------");
+		}
+		catch(IOException e){
+			e.printStackTrace();
+		}
+		
+	}
+	
+	public void formatDisplay() {
+	int count = 0;
+	for(Equation v : hashSet) {
+		if(count%5==0) {
+			System.out.println();
+		}
+		System.out.print(v+"\t");
+		count++;
+	}
+	
+	System.out.println("\n--------------------------\nç­”æ¡ˆå¦‚ä¸‹ï¼š");
+	for(Equation v : hashSet) {
+		if(count%5==0) {
+			System.out.println();
+		}
+		System.out.print(v.getResultNum()+"\t");
+		count++;
+	}
+}
 	
 }
